@@ -56,7 +56,7 @@ function saveScreenshot(dataUrl, source) { // Receive the source parameter
   });
 }
 
-function createScreenshotContainer(index, screenshotUrl, source) { // Receive the source parameter
+function createScreenshotContainer(index, screenshotUrl, source) {
   const screenshotContainer = document.createElement("div");
   screenshotContainer.className = "screenshot-container";
   screenshotContainer.dataset.index = index;
@@ -64,11 +64,11 @@ function createScreenshotContainer(index, screenshotUrl, source) { // Receive th
   const screenshotElement = createScreenshotElement(screenshotUrl);
   screenshotContainer.appendChild(screenshotElement);
 
-  const fKeyLabel = createFKeyLabel(source); // Pass the source to createFKeyLabel
+  const fKeyLabel = createFKeyLabel(source);
   screenshotContainer.appendChild(fKeyLabel);
 
   const deleteButton = createDeleteButton();
-  screenshotContainer.appendChild(deleteButton);
+  screenshotContainer.appendChild(deleteButton); // Add the delete button to the container
 
   return screenshotContainer;
 }
@@ -76,7 +76,7 @@ function createScreenshotContainer(index, screenshotUrl, source) { // Receive th
 function createFKeyLabel(source) {
   const fKeyLabel = document.createElement("div");
   fKeyLabel.className = "fkey-label";
-  fKeyLabel.textContent = source.toUpperCase(); // Show the F key source text
+  fKeyLabel.textContent = source ? source.toUpperCase() : "Unknown"; // Show the F key source text or "Unknown" if source is not provided
   return fKeyLabel;
 }
 
@@ -90,7 +90,7 @@ function createScreenshotElement(src) {
 function createDeleteButton() {
   const deleteButton = document.createElement("button");
   deleteButton.className = "delete-button";
-  deleteButton.textContent = "Delete";
+  deleteButton.innerHTML = "&#10060;"; // This is the HTML entity for the "x" symbol
   return deleteButton;
 }
 

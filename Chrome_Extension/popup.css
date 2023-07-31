@@ -44,6 +44,12 @@ h1 {
   margin-bottom: 10px;
 }
 
+/* Align F key label to the left */
+.fkey-label {
+  text-align: left;
+  margin-left: 10px;
+}
+
 .delete-button {
   background-color: #ff4136;
   color: white;

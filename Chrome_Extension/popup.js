@@ -10,6 +10,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Capture screenshots when an F key is pressed
+  document.addEventListener("keydown", function (event) {
+    const fKeyNumber = parseInt(event.key.substring(1));
+    if (event.key.startsWith("F") && fKeyNumber >= 1 && fKeyNumber <= 24) {
+      event.preventDefault(); // Prevent default behavior of F keys
+      if (!isCaptureEnabled) {
+        // Start capture only if not already capturing
+        isCaptureEnabled = true;
+        captureScreenshot("F" + fKeyNumber); // Pass the F key source as "F1", "F2", etc.
+      }
+    }
+  });
+
   // Delete a screenshot when the delete button is clicked
   document.getElementById("screenshotsList").addEventListener("click", function (event) {
     const target = event.target;
@@ -19,20 +32,23 @@ document.addEventListener("DOMContentLoaded", function () {
       deleteScreenshot(index);
     }
   });
+
+  refreshScreenshotsUI(); // Refresh UI on popup load
 });
 
-function captureScreenshot() {
-  chrome.runtime.sendMessage({ action: "startCapture" }, function (response) {
+function captureScreenshot(source) {
+  chrome.runtime.sendMessage({ action: "startCapture", source: source }, function (response) {
     if (response.success) {
-      saveScreenshot(response.dataUrl);
+      saveScreenshot(response.dataUrl, source); // Pass the source to saveScreenshot
+      isCaptureEnabled = false; // Reset the flag after capturing
     }
   });
 }
 
-function saveScreenshot(dataUrl) {
+function saveScreenshot(dataUrl, source) { // Receive the source parameter
   chrome.storage.local.get("screenshots", function (result) {
     const screenshots = result.screenshots || [];
-    screenshots.push({ dataUrl: dataUrl });
+    screenshots.push({ dataUrl: dataUrl, source: source }); // Save the source with the screenshot
     chrome.storage.local.set({ screenshots: screenshots }, function () {
       // Refresh the UI after saving the screenshot
       refreshScreenshotsUI();
@@ -40,7 +56,7 @@ function saveScreenshot(dataUrl) {
   });
 }
 
-function createScreenshotContainer(index, screenshotUrl) {
+function createScreenshotContainer(index, screenshotUrl, source) { // Receive the source parameter
   const screenshotContainer = document.createElement("div");
   screenshotContainer.className = "screenshot-container";
   screenshotContainer.dataset.index = index;
@@ -48,9 +64,20 @@ function createScreenshotContainer(index, screenshotUrl) {
   const screenshotElement = createScreenshotElement(screenshotUrl);
   screenshotContainer.appendChild(screenshotElement);
 
+  const fKeyLabel = createFKeyLabel(source); // Pass the source to createFKeyLabel
+  screenshotContainer.appendChild(fKeyLabel);
+
   const deleteButton = createDeleteButton();
   screenshotContainer.appendChild(deleteButton);
+
   return screenshotContainer;
+}
+
+function createFKeyLabel(source) {
+  const fKeyLabel = document.createElement("div");
+  fKeyLabel.className = "fkey-label";
+  fKeyLabel.textContent = source.toUpperCase(); // Show the F key source text
+  return fKeyLabel;
 }
 
 function createScreenshotElement(src) {
@@ -86,7 +113,7 @@ function refreshScreenshotsUI() {
   chrome.storage.local.get("screenshots", function (result) {
     const screenshots = result.screenshots || [];
     screenshots.forEach(function (screenshot, index) {
-      const screenshotContainer = createScreenshotContainer(index, screenshot.dataUrl);
+      const screenshotContainer = createScreenshotContainer(index, screenshot.dataUrl, screenshot.source); // Pass the source to createScreenshotContainer
       screenshotsList.appendChild(screenshotContainer);
     });
   });
